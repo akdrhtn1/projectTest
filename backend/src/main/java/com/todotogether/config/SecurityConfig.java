@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.springframework.http.HttpMethod.POST;
 
@@ -50,7 +51,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
-        http.cors().configurationSource(corsConfigurationSource());
+        http.csrf().disable()
+                .cors().configurationSource(corsConfigurationSource());
 
 
     }
@@ -59,7 +61,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOrigin("*");
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
