@@ -11,6 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 import static org.springframework.http.HttpMethod.POST;
 
@@ -37,14 +43,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         ;
 
         http.authorizeRequests()
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .mvcMatchers(POST,"/api/**").permitAll()
                 .mvcMatchers(POST,"/api/user/**").permitAll()
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
+                .and().cors().and()
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
 
 
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+
+    }
+
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
