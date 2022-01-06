@@ -60,6 +60,9 @@ public class UserRestController {
     public Map Test(@RequestParam Map map){
         System.out.println(map);
 
+        for(Object var2 : map.keySet()){
+            System.out.println(map.get(var2));
+        }
         return map;
     }
 
@@ -74,6 +77,8 @@ public class UserRestController {
     @PostMapping("/test3")
     public Map Test234(@RequestBody Map map){
         System.out.println(map);
+
+
 
         return map;
     }
