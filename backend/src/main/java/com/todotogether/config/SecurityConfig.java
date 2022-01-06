@@ -37,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         ;
 
         http.authorizeRequests()
-                .mvcMatchers(POST,"/api/user/**").permitAll()
+                .mvcMatchers(POST,"/api/**").permitAll()
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
@@ -53,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**").antMatchers(POST,"/api/user/**");
+        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**").antMatchers(POST,"/api/**");
     }
 
     @Bean
