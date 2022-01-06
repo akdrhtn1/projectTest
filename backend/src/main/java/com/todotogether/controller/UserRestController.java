@@ -63,8 +63,7 @@ public class UserRestController {
 
 
     //회원가입(s3 가능해야함)
-    @CrossOrigin(origins = "*",allowCredentials = "true")
-    @RequestMapping(value = "", method = {RequestMethod.POST,RequestMethod.OPTIONS})
+    @PostMapping(value = "")
     public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
         Member member = modelMapper.map(memberDto, Member.class);
         long result = memberService.signUp(member);

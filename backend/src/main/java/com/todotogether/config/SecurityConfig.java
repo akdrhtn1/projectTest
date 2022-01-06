@@ -47,9 +47,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(POST,"/api/**").permitAll()
                 .mvcMatchers(POST,"/api/user/**").permitAll()
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
-                .and().cors().and()
+
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
+        http.cors().configurationSource(corsConfigurationSource());
 
 
     }
@@ -57,10 +58,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
