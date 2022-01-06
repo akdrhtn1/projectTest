@@ -56,15 +56,7 @@ public class UserRestController {
         return ResponseEntity.status(HttpStatus.OK).body(memberDto);
     }
 
-    @PostMapping("/test")
-    public Map Test(@RequestParam Map map){
-        System.out.println(map);
 
-        for(Object var2 : map.keySet()){
-            System.out.println(map.get(var2));
-        }
-        return map;
-    }
 
     @PostMapping("/test")
     public String Test(@RequestParam String email){
