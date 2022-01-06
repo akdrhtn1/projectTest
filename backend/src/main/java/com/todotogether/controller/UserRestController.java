@@ -56,9 +56,11 @@ public class UserRestController {
         return ResponseEntity.status(HttpStatus.OK).body(memberDto);
     }
 
-    @GetMapping("test")
-    public String Test(){
-        return "Testsss";
+    @PostMapping("test")
+    public Map Test(@RequestParam Map map){
+        System.out.println(map);
+
+        return map;
     }
 
 
