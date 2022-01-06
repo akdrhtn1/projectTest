@@ -13,6 +13,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -38,9 +39,13 @@ public class UserRestController {
 
         //회원 유효성 검사
         if(errors.hasErrors()){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errors); //유효성 검사 실패시
-        }
+            //--------------추가수정
+            Map<String, String> validatorResult = memberService.validateHandling(errors);
 
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(validatorResult); //유효성 검사 실패시
+            //-------------
+
+        }
         //아이디 중복 검증 유효성 검사
         try{
             Member member = modelMapper.map(memberDto, Member.class);
