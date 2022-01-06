@@ -66,6 +66,13 @@ public class UserRestController {
         return map;
     }
 
+    @PostMapping("/test")
+    public String Test(@RequestParam String email){
+        System.out.println(email);
+
+
+        return email;
+    }
 
     @PostMapping("/test2")
     public MemberDto Test23(@RequestBody MemberDto memberDto){
