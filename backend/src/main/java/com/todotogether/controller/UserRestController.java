@@ -56,7 +56,7 @@ public class UserRestController {
         return ResponseEntity.status(HttpStatus.OK).body(memberDto);
     }
 
-    @PostMapping("test")
+    @PostMapping("/test")
     public Map Test(@RequestParam Map map){
         System.out.println(map);
 
@@ -64,9 +64,23 @@ public class UserRestController {
     }
 
 
+    @PostMapping("/test2")
+    public MemberDto Test23(@RequestBody MemberDto memberDto){
+        System.out.println(memberDto);
+
+        return memberDto;
+    }
+
+    @PostMapping("/test3")
+    public Map Test234(@RequestBody Map map){
+        System.out.println(map);
+
+        return map;
+    }
+
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
-   // public ResponseEntity<Boolean> signUp(@RequestParam(required = false) MemberDto memberDto){
+   // public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
     public ResponseEntity<Boolean> signUp(@RequestParam Map map){
         System.out.println(map);
         Member member = modelMapper.map(map, Member.class);
