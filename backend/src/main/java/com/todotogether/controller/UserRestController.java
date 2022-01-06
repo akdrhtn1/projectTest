@@ -78,6 +78,20 @@ public class UserRestController {
         return map;
     }
 
+    @PostMapping("/test4")
+    public Map Test2345(@ModelAttribute Map map){
+        System.out.println(map);
+
+        return map;
+    }
+
+    @PostMapping("/test5")
+    public MemberDto Test23451(@ModelAttribute MemberDto memberDto){
+        System.out.println(memberDto);
+
+        return memberDto;
+    }
+
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
    // public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
