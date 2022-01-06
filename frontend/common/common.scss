@@ -1,0 +1,64 @@
+// 테마변수
+$purple: rgb(155, 89, 182);
+$boxColor: rgb(245, 242, 246);
+$buttonColor: rgb(214, 201, 220);
+$titleColor: rgb(155, 89, 182);
+$fontColor: rgb(190, 190, 190);
+$adminFontColor: rgb(149, 165, 166);
+$adminFontColor2: rgb(52, 73, 94);
+$userFontFamily: serif;
+$adminFontFamily: Malgun Gothic;
+$fontSizeSmall: 18px;
+$fontSizeTall: 31px;
+$fontSizeMobileSmall: 11px;
+$fontSizeMobileTall: 17px;
+
+
+// 버튼 에니메이션
+@mixin aniBtn ($fontSize : $fontSizeMobileTall) {
+    background-color: $buttonColor;
+    border: 2px solid $fontColor;
+    border-radius: 15px;
+    padding: 10px;
+    color: white;
+    font-size: $fontSize;
+    text-decoration: none;
+    position: relative;
+
+&:hover {
+    animation: borderHover both 2s ease;
+}
+@keyframes borderHover {
+    to {
+        border: 2px solid $titleColor;
+    }
+}
+
+&::after {
+    position: absolute;
+    content: '';
+    width: 0px;
+    height: 2px;
+    background-color: $titleColor;
+    left: 12px;
+    bottom: -2px;
+}
+&::before {
+    position: absolute;
+    content: '';
+    width: 0px;
+    height: 2px;
+    background-color: $titleColor;
+    right: 12px;
+    top: -2px;
+}
+&:hover::after, &:hover::before {
+    animation: hovering both 1s ease;
+}
+
+@keyframes hovering {
+    to { 
+        width: 67%; 
+    };
+}
+};
