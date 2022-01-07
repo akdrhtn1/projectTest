@@ -127,7 +127,29 @@ public class UserRestController {
     @GetMapping(value = "test9")
     public String tes4432(){
 
+
         return "asdasdas";
+    }
+
+    @GetMapping(value = "test10")
+    public String tes443221(@RequestBody String email){
+
+        System.out.println(email);
+        return email;
+    }
+
+    @GetMapping(value = "test11")
+    public String tes443332(@RequestParam String email){
+
+        System.out.println(email);
+        return email;
+    }
+
+    @GetMapping(value = "test12")
+    public String tes443112(@ModelAttribute String email){
+
+        System.out.println(email);
+        return email;
     }
 
 
