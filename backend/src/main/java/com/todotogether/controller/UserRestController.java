@@ -9,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,8 @@ public class UserRestController {
     private MemberService memberService;
     private ModelMapper modelMapper;
     private EmailService emailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     public UserRestController(MemberService memberService, ModelMapper modelMapper, EmailService emailService) {
@@ -96,13 +99,20 @@ public class UserRestController {
         return memberDto;
     }
 
+    @PostMapping(value = "test6")
+    public ResponseEntity<Boolean> test(@ModelAttribute MemberDto memberDto){
+
+        System.out.println(memberDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(true);
+    }
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
     public ResponseEntity<Boolean> signUp(@ModelAttribute MemberDto memberDto){
 
         System.out.println(memberDto);
         Member member = modelMapper.map(memberDto, Member.class);
-        long result = memberService.signUp(member);
+        long result = memberService.signUp(member, passwordEncoder);
 
         System.out.println(result + "asd"+ member);
         if(result >0){

@@ -20,11 +20,12 @@ import java.util.Optional;
 public class MemberService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
-    private PasswordEncoder passwordEncoder;
+
 
     public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
+
     //유효성 검사
     public void validateMember(Member member){
         Member findEmail = memberRepository.findByEmail(member.getEmail());
@@ -36,14 +37,15 @@ public class MemberService implements UserDetailsService {
         }
     }
 
-    public long signUp(Member member){
+    public long signUp(Member member, PasswordEncoder passwordEncoder){
         String encodePassword = passwordEncoder.encode(member.getPassword()); //암호화
         member.setPassword(encodePassword);
 
         member.setEnabled(true);
         Role role = new Role();
         role.setRId(1l);
-        member.getRoles().add(role);
+        
+        //member.getRoles().add(role);
 
         Member save = memberRepository.save(member);
 
