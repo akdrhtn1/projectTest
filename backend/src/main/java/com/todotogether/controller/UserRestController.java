@@ -98,10 +98,10 @@ public class UserRestController {
 
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
-   // public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
-    public ResponseEntity<Boolean> signUp(@RequestParam Map map){
-        System.out.println(map);
-        Member member = modelMapper.map(map, Member.class);
+    public ResponseEntity<Boolean> signUp(@ModelAttribute MemberDto memberDto){
+
+        System.out.println(memberDto);
+        Member member = modelMapper.map(memberDto, Member.class);
         long result = memberService.signUp(member);
 
         System.out.println(result + "asd"+ member);
