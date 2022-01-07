@@ -49,6 +49,10 @@ public class UserRestController {
             //-------------
 
         }
+
+        //패스워드 다릅니다 추가해야함~~~~
+
+        //--------------------
         //아이디 중복 검증 유효성 검사
         try{
             Member member = modelMapper.map(memberDto, Member.class);

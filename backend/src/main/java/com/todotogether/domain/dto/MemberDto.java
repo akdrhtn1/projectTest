@@ -31,7 +31,7 @@ public class MemberDto implements Serializable {
 
     @NotEmpty(message = "전화번호는 필수 입력 값입니다.")
     @Pattern(regexp = "/^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$/", message = "전화번호 형식에 맞게 입력해주세요")
-    private int phone;
+    private String phone;
 
     @NotEmpty(message = "백업 이메일은 필수 입력 값입니다.")
     @Email(regexp = "/^([\\w-]+(?:\\.[\\w-]+)*)@((?:[\\w-]+\\.)*\\w[\\w-]{0,66})\\.([a-z]{2,6}(?:\\.[a-z]{2})?)$/i",

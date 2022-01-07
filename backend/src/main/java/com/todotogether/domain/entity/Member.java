@@ -37,7 +37,7 @@ public class Member extends BaseTimeEntity{
     private boolean enabled;
 
     @Column(nullable = false)
-    private int phone;
+    private String phone;
 
     @Column(nullable = false, length = 40)
     private String backupEmail;
