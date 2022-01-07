@@ -44,7 +44,7 @@ public class MemberService implements UserDetailsService {
         member.setEnabled(true);
         Role role = new Role();
         role.setRId(1l);
-        
+
         //member.getRoles().add(role);
 
         Member save = memberRepository.save(member);
