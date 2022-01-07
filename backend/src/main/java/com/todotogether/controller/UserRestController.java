@@ -106,6 +106,17 @@ public class UserRestController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(true);
     }
+
+
+    @GetMapping(value = "test7")
+    public MemberDto test33444(@RequestBody MemberDto memberDto){
+
+        System.out.println(memberDto);
+
+        return memberDto;
+    }
+
+
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
     public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
