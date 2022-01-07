@@ -125,11 +125,9 @@ public class UserRestController {
     }
 
     @GetMapping(value = "test9")
-    public String tes4432(@ModelAttribute String  messege){
+    public String tes4432(){
 
-        System.out.println(messege);
-
-        return messege;
+        return "asdasdas";
     }
 
 
