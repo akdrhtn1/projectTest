@@ -1,3 +1,4 @@
+/*
 package com.todotogether.util;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -44,3 +45,4 @@ public class UploadImageS3 {
     }
 
 }
+*/
