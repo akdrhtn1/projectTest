@@ -116,6 +116,22 @@ public class UserRestController {
         return memberDto;
     }
 
+    @GetMapping(value = "test8")
+    public String tes44(@RequestBody String  messege){
+
+        System.out.println(messege);
+
+        return messege;
+    }
+
+    @GetMapping(value = "test9")
+    public String tes4432(@ModelAttribute String  messege){
+
+        System.out.println(messege);
+
+        return messege;
+    }
+
 
     //회원가입(s3 가능해야함)
     @PostMapping(value = "")
