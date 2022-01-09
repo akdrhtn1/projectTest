@@ -41,7 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
-        
+
         http.formLogin()
                 .loginPage("/login")
                 .defaultSuccessUrl("/")
@@ -82,8 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**").antMatchers(POST,"/api/**")
-                .antMatchers(POST,"/api/user/**").antMatchers(GET,"/api/user/**");
+        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**").mvcMatchers(POST,"/api/**")
+                .mvcMatchers(GET,"/api/**");
     }
 
     @Bean
