@@ -35,6 +35,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .cors().configurationSource(corsConfigurationSource());
 
+        http.authorizeRequests()
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                .mvcMatchers("/api/**").permitAll()
+                .mvcMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
+        ;
+        
         http.formLogin()
                 .loginPage("/login")
                 .defaultSuccessUrl("/")
@@ -45,14 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("/")
         ;
 
-        http.authorizeRequests()
-                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .mvcMatchers("/api/user/**").permitAll()
-                .mvcMatchers("/api/**").permitAll()
-                .mvcMatchers("/admin/**").hasRole("ADMIN")
 
-                //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
-        ;
 
 
 
