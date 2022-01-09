@@ -1,4 +1,4 @@
-/*
+
 package com.todotogether.util;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,17 +32,7 @@ public class UploadImageS3 {
         return fileName;
     }
 
-    // MultipartFile 을 file로 변형 후 로컬로 저장, 파일객체를 리턴
-    public Optional<File> convertMultipartFileToFile(MultipartFile file) throws IOException {
-        File convertFile = new File(file.getOriginalFilename());
-        if(convertFile.createNewFile()) {
-            try(FileOutputStream fos = new FileOutputStream(convertFile)) {
-                fos.write(file.getBytes());
-            }
-            return Optional.of(convertFile);
-        }
-        return Optional.empty();
-    }
+
 
 }
-*/
+

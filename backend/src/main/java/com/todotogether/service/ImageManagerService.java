@@ -1,13 +1,15 @@
-/*
+
 
 package com.todotogether.service;
 
-import com.apple.eio.FileManager;
+import com.todotogether.domain.dto.UploadFileDto;
+import com.todotogether.util.FileManager;
 import com.todotogether.util.UploadImageS3;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -20,7 +22,8 @@ public class ImageManagerService {
 
 
     // 임시 파일 생성 & 업데이트 & 임시 파일 삭제
-    public UploadFileDto createAndUploadFile(MultipartFile mf, String filePath) {
+    @Transactional
+    public UploadFileDto createAndUploadFile(MultipartFile mf, String filePath) throws Exception {
         long time = System.currentTimeMillis();
         String originalFilename = mf.getOriginalFilename();
         String saveFileName = String.format("%d_%s", time, originalFilename.replaceAll(" ", ""));
@@ -29,13 +32,13 @@ public class ImageManagerService {
         File uploadFile = null;
         try {
             Optional<File> uploadFileOpt = fileManager.convertMultipartFileToFile(mf);
-            if (uploadFileOpt.isEmpty()) {
+            if (!uploadFileOpt.isPresent()) {
                 throw new Exception("파일변환에 실패했습니다");
             }
             uploadFile = uploadFileOpt.get();
 
             // 파일 업로드
-            String saveFilePath = uploadImage.upload(uploadFile, filePath, saveFileName);
+            String saveFilePath = uploadImageS3.upload(uploadFile, filePath, saveFileName);
 
             return UploadFileDto.create(originalFilename
                     , File.separator + saveFilePath);
@@ -50,4 +53,4 @@ public class ImageManagerService {
         }
     }
 }
-*/
+

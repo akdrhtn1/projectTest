@@ -1,4 +1,4 @@
-/*
+
 package com.todotogether.config;
 
 
@@ -24,18 +24,14 @@ public class AmazonS3Config {
     private String region;
 
     @Bean
-    @Primary
-    public BasicAWSCredentials awsCredentialsProvider(){
-        BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey);
-        return basicAWSCredentials;
-    }
-    @Bean
     public AmazonS3 amazonS3(){
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(accessKey, secretKey);
+
         AmazonS3 s3Builder = AmazonS3ClientBuilder.standard()
                 .withRegion(region)
-                .withCredentials(new AWSStaticCredentialsProvider(awsCredentialsProvider()))
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .build();
         return s3Builder;
     }
 }
-*/
+
