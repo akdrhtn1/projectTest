@@ -8,7 +8,7 @@ import org.springframework.context.annotation.PropertySources;
 @PropertySources({
         @PropertySource("classpath:application-real.properties"),
       //  @PropertySource("classpath:application-real-db.properties"),
-        @PropertySource("application-s3.properties"),
+        @PropertySource("classpath:application-s3.properties"),
         @PropertySource("classpath:email.properties")
 })
 public class PropertiesWithJavaConfig {
