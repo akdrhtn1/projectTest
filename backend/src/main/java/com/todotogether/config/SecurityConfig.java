@@ -47,8 +47,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .mvcMatchers(POST,"/api/**").permitAll()
-                .mvcMatchers(POST,"/api/user/**").permitAll()
+                .mvcMatchers("/api/user/**").permitAll()
+                .mvcMatchers("/api/**").permitAll()
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
 
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
