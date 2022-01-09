@@ -55,6 +55,9 @@ public class UserRestController {
             validatorResult = memberService.validateHandling(errors);
         }
             // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(validatorResult); //유효성 검사 실패시
+
+        //비밀번호 변경
+        /*
         if(!memberDto.getPassword().equals(memberDto.getPassword2())){
              validatorResult.put("valid_pwCheck","비밀번호가 일치하지 않습니다.");
         }
@@ -66,6 +69,7 @@ public class UserRestController {
             validatorResult.put("valid_idCheck",e.getMessage());
             //return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
+        */
         return ResponseEntity.status(HttpStatus.OK).body(validatorResult);
     }
 
