@@ -16,8 +16,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.Collections;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -32,7 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-
+        http.csrf().disable()
+                .cors().configurationSource(corsConfigurationSource());
 
         http.formLogin()
                 .loginPage("/login")
@@ -47,13 +46,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .mvcMatchers(POST,"/api/**").permitAll()
-                .mvcMatchers(POST,"/api/user/**").permitAll()
                 .mvcMatchers("/admin/**").hasRole("ADMIN")
 
-                //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
+                .anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
-        http.csrf().disable()
-                .cors().configurationSource(corsConfigurationSource());
+
 
 
     }
@@ -83,7 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers("/css/**", "/js/**", "/img/**").antMatchers(POST,"/api/**")
-                .antMatchers(POST,"/api/user/**").antMatchers(GET,"/api/user/**");
+              .antMatchers(GET,"/api/**");
     }
 
     @Bean
