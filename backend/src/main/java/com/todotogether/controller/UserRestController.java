@@ -46,7 +46,7 @@ public class UserRestController {
             회원 유효성 검사
      */
     @PostMapping("/valid")
-    public ResponseEntity userValid(@RequestBody @Valid MemberDto memberDto, Errors errors){
+    public ResponseEntity userValid(@RequestBody(required = false) @Valid MemberDto memberDto, Errors errors){
 
         Map<String, String> validatorResult = null;
         //회원 유효성 검사
