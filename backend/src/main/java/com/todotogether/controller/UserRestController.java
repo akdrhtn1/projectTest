@@ -46,12 +46,8 @@ public class UserRestController {
             회원 유효성 검사
      */
     @PostMapping("/valid")
-    public MemberDto Test2553(@RequestBody MemberDto memberDto){
-        System.out.println(memberDto);
 
-        return memberDto;
-    }
-    /*
+
     public ResponseEntity userValid(@RequestBody @Valid MemberDto memberDto, Errors errors){
 
         Map<String, String> validatorResult = null;
@@ -74,8 +70,6 @@ public class UserRestController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(validatorResult);
     }
-
-     */
 
 
     @PostMapping("/test2")
