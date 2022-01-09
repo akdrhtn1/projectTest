@@ -46,14 +46,17 @@ public class UserRestController {
             회원 유효성 검사
      */
     @PostMapping("/valid")
-    public ResponseEntity userValid(@RequestBody @Valid MemberDto memberDto, Errors errors){
+    public ResponseEntity userValid(@RequestBody @Valid MemberDto memberDto){//, Errors errors){
 
         Map<String, String> validatorResult = null;
         //회원 유효성 검사
+        /*
         if(errors.hasErrors()) {
             //--------------추가수정
             validatorResult = memberService.validateHandling(errors);
         }
+        
+         */
             // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(validatorResult); //유효성 검사 실패시
         if(!memberDto.getPassword().equals(memberDto.getPassword2())){
              validatorResult.put("valid_pwCheck","비밀번호가 일치하지 않습니다.");
