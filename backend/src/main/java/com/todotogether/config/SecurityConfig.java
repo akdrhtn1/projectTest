@@ -32,7 +32,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-
+        http.csrf().disable()
+                .cors().configurationSource(corsConfigurationSource());
 
         http.formLogin()
                 .loginPage("/login")
@@ -52,8 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
         ;
-        http.csrf().disable()
-                .cors().configurationSource(corsConfigurationSource());
+
 
 
     }

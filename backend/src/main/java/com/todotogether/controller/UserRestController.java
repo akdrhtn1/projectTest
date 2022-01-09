@@ -20,7 +20,6 @@ import javax.validation.Valid;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -88,7 +87,7 @@ public class UserRestController {
 
     //회원가입(s3 가능해야함)
     @PostMapping(value = "/")
-    public ResponseEntity<Boolean> signUp(/*@RequestBody*/@ModelAttribute MemberDto memberDto){
+    public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
 
         System.out.println(memberDto);
         Member member = modelMapper.map(memberDto, Member.class);
