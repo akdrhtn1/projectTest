@@ -1,10 +1,7 @@
 package com.todotogether.domain.entity;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -59,4 +56,17 @@ public class Member extends BaseTimeEntity{
 
     @OneToMany(mappedBy = "nMember", cascade = CascadeType.REMOVE)
     private List<Notification> notifications;
+    //google,kakao,facebook 이 들어감
+    private String provider;
+    //sub의 정보
+    private String providerId;
+
+    @Builder
+    public Member(String email, String password, String name, String provider, String providerId) {
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.provider = provider;
+        this.providerId = providerId;
+    }
 }
