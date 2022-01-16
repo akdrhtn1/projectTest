@@ -1,0 +1,622 @@
+From 3e8f359509da65a2085e4767da9f292b4088fdea Mon Sep 17 00:00:00 2001
+From: akdrhtn1 <akdrhtn@kakao.com>
+Date: Sun, 16 Jan 2022 23:32:03 +0900
+Subject: [PATCH] Login upload
+
+---
+ backend/.gitignore                            |  2 +-
+ backend/pom.xml                               |  6 +-
+ .../todotogether/auth/PrincipalDetails.java   | 95 +++++++++++++++++++
+ .../config/PropertiesWithJavaConfig.java      | 16 ----
+ .../todotogether/config/SecurityConfig.java   | 39 ++++++--
+ .../com/todotogether/config/SpringConfig.java |  4 +
+ .../controller/UserRestController.java        | 69 +++++++++-----
+ .../todotogether/domain/entity/Member.java    | 18 +++-
+ .../com/todotogether/domain/entity/Role.java  |  1 +
+ .../repository/MemberRepository.java          |  3 +-
+ .../todotogether/service/MemberService.java   | 22 ++---
+ .../service/PrincipalOauth2UserService.java   | 59 ++++++++++++
+ .../resources/application-real.properties     |  3 -
+ .../resources/config/application.properties   | 10 ++
+ 14 files changed, 275 insertions(+), 72 deletions(-)
+ create mode 100644 backend/src/main/java/com/todotogether/auth/PrincipalDetails.java
+ delete mode 100644 backend/src/main/java/com/todotogether/config/PropertiesWithJavaConfig.java
+ create mode 100644 backend/src/main/java/com/todotogether/service/PrincipalOauth2UserService.java
+ delete mode 100644 backend/src/main/resources/application-real.properties
+ create mode 100644 backend/src/main/resources/config/application.properties
+
+diff --git a/backend/.gitignore b/backend/.gitignore
+index 0ecec46..06eb352 100644
+--- a/backend/.gitignore
++++ b/backend/.gitignore
+@@ -185,7 +185,7 @@ Icon
+ Network Trash Folder
+ Temporary Items
+ .apdisk
+-
++application.yml
+ # End of https://www.toptal.com/developers/gitignore/api/macos
+ 
+ # End of https://www.toptal.com/developers/gitignore/api/intellij,maven,java
+diff --git a/backend/pom.xml b/backend/pom.xml
+index 2fc395e..bfece7a 100644
+--- a/backend/pom.xml
++++ b/backend/pom.xml
+@@ -79,8 +79,10 @@
+ 			<artifactId>spring-cloud-starter-aws</artifactId>
+ 			<version>2.2.6.RELEASE</version>
+ 		</dependency>
+-
+-
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-oauth2-client</artifactId>
++		</dependency>
+ 	</dependencies>
+ 
+ 	<build>
+diff --git a/backend/src/main/java/com/todotogether/auth/PrincipalDetails.java b/backend/src/main/java/com/todotogether/auth/PrincipalDetails.java
+new file mode 100644
+index 0000000..a4fc9bf
+--- /dev/null
++++ b/backend/src/main/java/com/todotogether/auth/PrincipalDetails.java
+@@ -0,0 +1,95 @@
++package com.todotogether.auth;
++
++//시큐리티 /login 주요청이 오면 낚채서 로그인을 진행시킨다.
++//로그인을 진행 완료가 되면 시큐리티 session을 만들어줍니다. (Security ContextHolder)
++//오브젝트 타입 => Authentication 타입 객체
++//Authentication 안에 User정보가 있어야 됨
++//User오브젝타입 => UserDetail 타입 객체
++//Security Session => Authentication => UserDetails
++
++import com.todotogether.domain.entity.Member;
++import lombok.Getter;
++import org.springframework.security.core.GrantedAuthority;
++import org.springframework.security.core.userdetails.UserDetails;
++import org.springframework.security.oauth2.core.user.OAuth2User;
++
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Map;
++
++@Getter
++public class PrincipalDetails implements UserDetails, OAuth2User {
++
++    private Member member;
++    private Map<String,Object> attributes;
++    //일발 로그인
++    public PrincipalDetails(Member member)
++    {
++        this.member = member;
++    }
++
++    //OAuth 로그인
++    public PrincipalDetails(Member member,Map<String,Object> attributes)
++    {
++        this.member = member;
++        this.attributes = attributes;
++    }
++
++    @Override
++    public Map<String, Object> getAttributes() {
++        return attributes;
++    }
++
++    @Override
++    public String getName() {
++        return null;
++    }
++
++    //해당 유저의 권한 리턴
++    @Override
++    public Collection<? extends GrantedAuthority> getAuthorities() {
++        Collection<GrantedAuthority> collect = new ArrayList<>();
++        collect.add(new GrantedAuthority() {
++            @Override
++            public String getAuthority() {
++                return member.getRoles().get(1).toString();
++            }
++        });
++        return collect;
++    }
++
++    @Override
++    public String getPassword() {
++        return member.getPassword();
++    }
++
++    @Override
++    public String getUsername() {
++        return member.getEmail();
++    }
++
++    @Override
++    public boolean isAccountNonExpired() {
++        return true;
++    }
++    //계정이 잠겨있는지 여부
++    @Override
++    public boolean isAccountNonLocked() {
++        return true;
++    }
++
++    @Override
++    public boolean isCredentialsNonExpired() {
++        return true;
++    }
++    //계정활성
++    //휴먼 계정으로 하기로 했으면
++    @Override
++    public boolean isEnabled() {
++
++        //계정을 삭제하면 false로 바꿔주면 됨
++        return true;
++    }
++
++
++}
+diff --git a/backend/src/main/java/com/todotogether/config/PropertiesWithJavaConfig.java b/backend/src/main/java/com/todotogether/config/PropertiesWithJavaConfig.java
+deleted file mode 100644
+index e8def3a..0000000
+--- a/backend/src/main/java/com/todotogether/config/PropertiesWithJavaConfig.java
++++ /dev/null
+@@ -1,16 +0,0 @@
+-package com.todotogether.config;
+-
+-import org.springframework.context.annotation.Configuration;
+-import org.springframework.context.annotation.PropertySource;
+-import org.springframework.context.annotation.PropertySources;
+-
+-@Configuration
+-@PropertySources({
+-        @PropertySource("classpath:application-real.properties"),
+-      //  @PropertySource("classpath:application-real-db.properties"),
+-        @PropertySource("classpath:application-s3.properties"),
+-        @PropertySource("classpath:email.properties")
+-})
+-public class PropertiesWithJavaConfig {
+-
+-}
+diff --git a/backend/src/main/java/com/todotogether/config/SecurityConfig.java b/backend/src/main/java/com/todotogether/config/SecurityConfig.java
+index 06ff227..9c32c05 100644
+--- a/backend/src/main/java/com/todotogether/config/SecurityConfig.java
++++ b/backend/src/main/java/com/todotogether/config/SecurityConfig.java
+@@ -1,5 +1,10 @@
+ package com.todotogether.config;
+ 
++
++//구글 로그인이 완료된 뒤의 후처리가 필요. 1.코드받기, 2.엑세스토큰(권한), 3.사용자프로필 정보를 가져와서
++//4-1. 그 정보를 토대로 회원가입을 자동으로 진행시키기도 함 4-2(이메일,전화번호,이름,아이디)쇼핑몰 -> (집주소), 백화점몰 ->(vip등급, 일반등급)
++
++import com.todotogether.service.PrincipalOauth2UserService;
+ import com.todotogether.service.MemberService;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.annotation.Bean;
+@@ -16,18 +21,21 @@ import org.springframework.web.cors.CorsConfigurationSource;
+ import org.springframework.web.cors.CorsUtils;
+ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+ 
+-import java.util.Arrays;
+-import java.util.Collections;
+-
+ import static org.springframework.http.HttpMethod.GET;
+ import static org.springframework.http.HttpMethod.POST;
+ 
+ @Configuration
+-@EnableWebSecurity
++@EnableWebSecurity //스프링 필터체인에 등록
+ public class SecurityConfig extends WebSecurityConfigurerAdapter {
+ 
++    private MemberService memberService;
++    private PrincipalOauth2UserService principalDetailsService;
++
+     @Autowired
+-    MemberService memberService;
++    public SecurityConfig(MemberService memberService, PrincipalOauth2UserService principalDetailsService) {
++        this.memberService = memberService;
++        this.principalDetailsService = principalDetailsService;
++    }
+ 
+     @Override
+     protected void configure(HttpSecurity http) throws Exception {
+@@ -35,13 +43,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
+ 
+ 
+         http.formLogin()
+-                .loginPage("/login")
+-                .defaultSuccessUrl("/")
++                .loginPage("/loginPage")// ->로그인은 이경로에 수행이됨 view단의 위치
++                .loginProcessingUrl("/login") // -> form Action과 일치하여야 시큐리티가 controller login 대신 진행해줌
++                .defaultSuccessUrl("/") //성공시 이동되는 페이지
+                 .usernameParameter("email") //username대신 email을 사용!
+-                .failureUrl("/login")
++                .failureUrl("/loginPage")
+                 .and()
+                 .logout()
+                 .logoutSuccessUrl("/")
++                .and()
++                //구글 로그인 설정
++                .oauth2Login()
++                .loginPage("/loginForm")  //구글 로그인이 완료된 뒤의 후처리 (tip.코트x(엑세스토큰 + 사용자프로필정보 O)
++                .userInfoEndpoint()
++                .userService(principalDetailsService)
+         ;
+ 
+         http.authorizeRequests()
+@@ -50,8 +65,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
+                 .mvcMatchers(POST,"/api/user/**").permitAll()
+                 .mvcMatchers("/admin/**").hasRole("ADMIN")
+ 
+-                //.anyRequest().authenticated() //그 외에는 로그인 후 접근하도록 처리
++                //.anyRequest().authenticated()  .permitAll()하면 전부다 권한 해제 //그 외에는 로그인 후 접근하도록 처리
++                //.authenticated() 인증되면 들어갈 수 있는 주소
+         ;
++        /*
++        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
++                        .and()
++        */
++
+         http.csrf().disable()
+                 .cors().configurationSource(corsConfigurationSource());
+ 
+diff --git a/backend/src/main/java/com/todotogether/config/SpringConfig.java b/backend/src/main/java/com/todotogether/config/SpringConfig.java
+index d812536..857cbec 100644
+--- a/backend/src/main/java/com/todotogether/config/SpringConfig.java
++++ b/backend/src/main/java/com/todotogether/config/SpringConfig.java
+@@ -3,6 +3,7 @@ package com.todotogether.config;
+ import com.todotogether.repository.MemberRepository;
+ import com.todotogether.service.EmailService;
+ import com.todotogether.service.MemberService;
++import com.todotogether.service.PrincipalOauth2UserService;
+ import org.modelmapper.ModelMapper;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.context.annotation.Bean;
+@@ -26,4 +27,7 @@ public class SpringConfig {
+ 
+     @Bean
+     public ModelMapper modelMapper() {return new ModelMapper();}
++
++    @Bean
++    public PrincipalOauth2UserService principalDetailsService() {return new PrincipalOauth2UserService();}
+ }
+diff --git a/backend/src/main/java/com/todotogether/controller/UserRestController.java b/backend/src/main/java/com/todotogether/controller/UserRestController.java
+index 4aecddd..5440712 100644
+--- a/backend/src/main/java/com/todotogether/controller/UserRestController.java
++++ b/backend/src/main/java/com/todotogether/controller/UserRestController.java
+@@ -1,5 +1,6 @@
+ package com.todotogether.controller;
+ 
++import com.todotogether.auth.PrincipalDetails;
+ import com.todotogether.domain.dto.MemberDto;
+ import com.todotogether.domain.dto.UploadFileDto;
+ import com.todotogether.domain.entity.Member;
+@@ -11,7 +12,11 @@ import org.modelmapper.ModelMapper;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
++import org.springframework.security.core.Authentication;
++import org.springframework.security.core.annotation.AuthenticationPrincipal;
++import org.springframework.security.core.userdetails.UserDetails;
+ import org.springframework.security.crypto.password.PasswordEncoder;
++import org.springframework.security.oauth2.core.user.OAuth2User;
+ import org.springframework.validation.Errors;
+ import org.springframework.web.bind.annotation.*;
+ import org.springframework.web.multipart.MultipartFile;
+@@ -41,7 +46,6 @@ public class UserRestController {
+         this.imageManagerService = imageManagerService;
+         this.passwordEncoder = passwordEncoder;
+     }
+-
+     /*
+             회원 유효성 검사
+      */
+@@ -54,13 +58,14 @@ public class UserRestController {
+             //--------------추가수정
+             validatorResult = memberService.validateHandling(errors);
+         }
+-            // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(validatorResult); //유효성 검사 실패시
+-
+-        //비밀번호 변경
++        //
+         /*
+-        if(!memberDto.getPassword().equals(memberDto.getPassword2())){
+-             validatorResult.put("valid_pwCheck","비밀번호가 일치하지 않습니다.");
++        if(memberDto.getPassword() != null && memberDto.getPassword2() !=null){
++            if(!memberDto.getPassword().equals(memberDto.getPassword2())){
++                validatorResult.put("valid_pwCheck","비밀번호가 일치하지 않습니다.");
++            }
+         }
++        */
+         //아이디 중복 검증 유효성 검사
+         try{
+             Member member = modelMapper.map(memberDto, Member.class);
+@@ -69,26 +74,10 @@ public class UserRestController {
+             validatorResult.put("valid_idCheck",e.getMessage());
+             //return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+         }
+-        */
+-        return ResponseEntity.status(HttpStatus.OK).body(validatorResult);
+-    }
+-
+ 
+-    @PostMapping("/test2")
+-    public MemberDto Test23(@RequestBody MemberDto memberDto){
+-        System.out.println(memberDto);
+-
+-        return memberDto;
+-    }
+-
+-    @GetMapping(value = "test11")
+-    public String tes443332(@RequestParam String email){
+-
+-        System.out.println(email);
+-        return email;
++        return ResponseEntity.status(HttpStatus.OK).body(validatorResult);
+     }
+ 
+-
+     //회원가입(s3 가능해야함)
+     @PostMapping(value = "/")
+     public ResponseEntity<Boolean> signUp(@RequestBody MemberDto memberDto){
+@@ -121,8 +110,6 @@ public class UserRestController {
+             return ResponseEntity.status(HttpStatus.OK).body(uploadFileDto);
+     }
+ 
+-
+-
+     //email인증 클릭시 인증번호 발송
+     @PostMapping("/emailConfirm")
+     public ResponseEntity<String> emailConfirm(@RequestBody String email)throws Exception{
+@@ -132,5 +119,37 @@ public class UserRestController {
+         return ResponseEntity.status(HttpStatus.OK).body(confirm);
+     }
+ 
++    //로그인 후 계정 세션 정보를 확인
++    @GetMapping("/login")
++    public String testLogin(Authentication authentication, @AuthenticationPrincipal PrincipalDetails PrincipalDetails){
++        //1번째 방법 getUser정보
++        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
++        log.info("authentication : " + principalDetails.getMember());
++
++        //2번째 방법 생성한 principalDetails 상속받은 userDetails을 활용하는 방법
++        log.info("userDetails : " + PrincipalDetails.getMember());
++        return "세션 정보 확인";
++    }
++
++    //구글 로그인 후 세션 정보 확인하기
++    @GetMapping("/login")
++    public String testOAuthLogin(Authentication authentication, @AuthenticationPrincipal OAuth2User oauth){
++        //1번째 방법 getUser정보
++        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
++        log.info("authentication : " + oAuth2User.getAttributes());
++
++        log.info("oauth2User : " + oauth.getAttributes());
++
++
++        //2번째 방법 생성한 principalDetails 상속받은 userDetails을 활용하는 방법
++        return "OAuth 세션 정보 확인";
++    }
++
++    //OAuth 로그인을 해도 PrincipalDetails
++    //일반 로그인을 해도 PrincipaDetails
++    @GetMapping("/user")
++    public Member user(@AuthenticationPrincipal PrincipalDetails principalDetails){
++        return principalDetails.getMember();
++    }
+ 
+ }
+diff --git a/backend/src/main/java/com/todotogether/domain/entity/Member.java b/backend/src/main/java/com/todotogether/domain/entity/Member.java
+index a54c3bb..b77f8fd 100644
+--- a/backend/src/main/java/com/todotogether/domain/entity/Member.java
++++ b/backend/src/main/java/com/todotogether/domain/entity/Member.java
+@@ -1,10 +1,7 @@
+ package com.todotogether.domain.entity;
+ 
+ 
+-import lombok.AllArgsConstructor;
+-import lombok.Getter;
+-import lombok.NoArgsConstructor;
+-import lombok.Setter;
++import lombok.*;
+ import org.hibernate.annotations.ColumnDefault;
+ 
+ import javax.persistence.*;
+@@ -59,4 +56,17 @@ public class Member extends BaseTimeEntity{
+ 
+     @OneToMany(mappedBy = "nMember", cascade = CascadeType.REMOVE)
+     private List<Notification> notifications;
++    //google,kakao,facebook 이 들어감
++    private String provider;
++    //sub의 정보
++    private String providerId;
++
++    @Builder
++    public Member(String email, String password, String name, String provider, String providerId) {
++        this.email = email;
++        this.password = password;
++        this.name = name;
++        this.provider = provider;
++        this.providerId = providerId;
++    }
+ }
+diff --git a/backend/src/main/java/com/todotogether/domain/entity/Role.java b/backend/src/main/java/com/todotogether/domain/entity/Role.java
+index 9e9a8f3..23b2e39 100644
+--- a/backend/src/main/java/com/todotogether/domain/entity/Role.java
++++ b/backend/src/main/java/com/todotogether/domain/entity/Role.java
+@@ -24,4 +24,5 @@ public class Role {
+ 
+     @ManyToMany(mappedBy = "roles")
+     private List<Member> members;
++
+ }
+diff --git a/backend/src/main/java/com/todotogether/repository/MemberRepository.java b/backend/src/main/java/com/todotogether/repository/MemberRepository.java
+index 67dcf71..c5087ce 100644
+--- a/backend/src/main/java/com/todotogether/repository/MemberRepository.java
++++ b/backend/src/main/java/com/todotogether/repository/MemberRepository.java
+@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
+ public interface MemberRepository extends JpaRepository<Member,Long> {
+ 
+     Member findByEmail(String email);
+-    Member findByNickname(String nickname);
++    Boolean existsByEmail(String email);
++    Boolean existsByNickname(String nickname);
+ }
+diff --git a/backend/src/main/java/com/todotogether/service/MemberService.java b/backend/src/main/java/com/todotogether/service/MemberService.java
+index 5aadca4..d674397 100644
+--- a/backend/src/main/java/com/todotogether/service/MemberService.java
++++ b/backend/src/main/java/com/todotogether/service/MemberService.java
+@@ -1,9 +1,9 @@
+ package com.todotogether.service;
+ 
++import com.todotogether.auth.PrincipalDetails;
+ import com.todotogether.domain.entity.Member;
+ import com.todotogether.domain.entity.Role;
+ import com.todotogether.repository.MemberRepository;
+-import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.security.core.userdetails.User;
+ import org.springframework.security.core.userdetails.UserDetails;
+ import org.springframework.security.core.userdetails.UserDetailsService;
+@@ -15,7 +15,9 @@ import org.springframework.validation.FieldError;
+ 
+ import java.util.HashMap;
+ import java.util.Map;
+-import java.util.Optional;
++
++//시큐리 설정에서  loginProcessUrl("/login")
++// /login 요청이 오면 자동으로 UserDetails 타입으로 IOC되어 있 loadUserByUsername 함수가 실행
+ 
+ public class MemberService implements UserDetailsService {
+ 
+@@ -28,11 +30,11 @@ public class MemberService implements UserDetailsService {
+ 
+     //유효성 검사
+     public void validateMember(Member member){
+-        Member findEmail = memberRepository.findByEmail(member.getEmail());
+-        Member findNickname = memberRepository.findByNickname(member.getNickname());
+-        if(findEmail != null){
++        Boolean findEmail = memberRepository.existsByEmail(member.getEmail());
++        Boolean findNickname = memberRepository.existsByNickname(member.getNickname());
++        if(findEmail){
+             throw new IllegalStateException("이미 등록된 이메일 입니다.");
+-        }else if(findNickname != null){
++        }else if(findNickname){
+             throw new IllegalStateException("이미 등록된 닉네임 입니다.");
+         }
+     }
+@@ -51,6 +53,7 @@ public class MemberService implements UserDetailsService {
+         return save.getUId();
+     }
+ 
++    //함수 종료시 @AuthenticationPrinciapl 어노테이션이 만들어진다.
+     @Override
+     @Transactional(readOnly = true)
+     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+@@ -61,11 +64,8 @@ public class MemberService implements UserDetailsService {
+             throw new UsernameNotFoundException(email);
+         }
+ 
+-        return User.builder()
+-                .username(member.getEmail())
+-                .password(member.getPassword())
+-                .roles(member.getRoles().get(1).toString())
+-                .build();
++        //시큐리티 session(내부 Authentication(내부 UserDetails))
++        return new PrincipalDetails(member);
+     }
+ 
+ 
+diff --git a/backend/src/main/java/com/todotogether/service/PrincipalOauth2UserService.java b/backend/src/main/java/com/todotogether/service/PrincipalOauth2UserService.java
+new file mode 100644
+index 0000000..91df8bf
+--- /dev/null
++++ b/backend/src/main/java/com/todotogether/service/PrincipalOauth2UserService.java
+@@ -0,0 +1,59 @@
++package com.todotogether.service;
++
++import com.todotogether.auth.PrincipalDetails;
++import com.todotogether.domain.entity.Member;
++import com.todotogether.domain.entity.Role;
++import com.todotogether.repository.MemberRepository;
++import lombok.extern.slf4j.Slf4j;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.security.crypto.password.PasswordEncoder;
++import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
++import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
++import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
++import org.springframework.security.oauth2.core.user.OAuth2User;
++
++@Slf4j
++public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
++
++    @Autowired
++    private PasswordEncoder passwordEncoder;
++
++    @Autowired
++    private MemberRepository memberRepository;
++
++    //구글로 부터 받은 userRequest 데이터에 대한 후처리 되는 함수
++    //함수 종료시 @AuthenticationPrinciapl 어노테이션이 만들어진다.
++    @Override
++    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
++        log.info("어떤 OAuth로 로그인 했는지 확인" + userRequest.getClientRegistration());
++
++
++        OAuth2User oAuth2User = super.loadUser(userRequest);
++
++        //구글로그인 버튼 클릭 -> 구글로그인창 -> 로그인을 완료 -> code를 리턴(OAuth-Client라이브러리) -> AccessToken요청
++        //userRequest정보 -> loadUser함수 호출 -> 구글로부터 회원프로필 받아준다.
++        log.info("사용자 정보 출력:"+ oAuth2User.getAttributes());
++
++        //회원가입을 강제로 진행
++        String provider = userRequest.getClientRegistration().getClientId(); // google
++        String providerId = oAuth2User.getAttribute("sub");
++        String username = provider+"_"+providerId; //중복x
++        String name = oAuth2User.getAttribute("name");
++        String password = passwordEncoder.encode("겟인데어");
++        String email = oAuth2User.getAttribute("email");
++
++        Member memberEntity = memberRepository.findByEmail(username);
++
++        if(memberEntity == null){
++            memberEntity = Member.builder()
++                    .email(email)
++                    .password(password)
++                    .name(name)
++                    .provider(provider)
++                    .providerId(providerId)
++                    .build();
++            //가입은 MemberService에서 해당 정보는 view에 리턴만 해주면 됨
++        }
++        return new PrincipalDetails(memberEntity, oAuth2User.getAttributes());
++    }
++}
+diff --git a/backend/src/main/resources/application-real.properties b/backend/src/main/resources/application-real.properties
+deleted file mode 100644
+index ee95224..0000000
+--- a/backend/src/main/resources/application-real.properties
++++ /dev/null
+@@ -1,3 +0,0 @@
+-spring.profiles.include=real-db
+-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL57InnoDBDialect
+-spring.session.store-type=jdbc
+\ No newline at end of file
+diff --git a/backend/src/main/resources/config/application.properties b/backend/src/main/resources/config/application.properties
+new file mode 100644
+index 0000000..c8f43ef
+--- /dev/null
++++ b/backend/src/main/resources/config/application.properties
+@@ -0,0 +1,10 @@
++# JPA
++spring.jpa.generate-ddl-auto=true
++spring.jpa.show_sql = true
++spring.jpa.hibernate.ddl-auto=update
++
++spring.devtools.livereload.enabled=true
++spring.devtools.restart.enabled=true
++
++
++
+-- 
+2.31.0
+
