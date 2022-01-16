@@ -1,9 +1,9 @@
 package com.todotogether.service;
 
+import com.todotogether.auth.PrincipalDetails;
 import com.todotogether.domain.entity.Member;
 import com.todotogether.domain.entity.Role;
 import com.todotogether.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,7 +15,9 @@ import org.springframework.validation.FieldError;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+
+//시큐리 설정에서  loginProcessUrl("/login")
+// /login 요청이 오면 자동으로 UserDetails 타입으로 IOC되어 있 loadUserByUsername 함수가 실행
 
 public class MemberService implements UserDetailsService {
 
@@ -28,11 +30,11 @@ public class MemberService implements UserDetailsService {
 
     //유효성 검사
     public void validateMember(Member member){
-        Member findEmail = memberRepository.findByEmail(member.getEmail());
-        Member findNickname = memberRepository.findByNickname(member.getNickname());
-        if(findEmail != null){
+        Boolean findEmail = memberRepository.existsByEmail(member.getEmail());
+        Boolean findNickname = memberRepository.existsByNickname(member.getNickname());
+        if(findEmail){
             throw new IllegalStateException("이미 등록된 이메일 입니다.");
-        }else if(findNickname != null){
+        }else if(findNickname){
             throw new IllegalStateException("이미 등록된 닉네임 입니다.");
         }
     }
@@ -51,6 +53,7 @@ public class MemberService implements UserDetailsService {
         return save.getUId();
     }
 
+    //함수 종료시 @AuthenticationPrinciapl 어노테이션이 만들어진다.
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -61,11 +64,8 @@ public class MemberService implements UserDetailsService {
             throw new UsernameNotFoundException(email);
         }
 
-        return User.builder()
-                .username(member.getEmail())
-                .password(member.getPassword())
-                .roles(member.getRoles().get(1).toString())
-                .build();
+        //시큐리티 session(내부 Authentication(내부 UserDetails))
+        return new PrincipalDetails(member);
     }
 
 

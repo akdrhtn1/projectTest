@@ -3,6 +3,7 @@ package com.todotogether.config;
 import com.todotogether.repository.MemberRepository;
 import com.todotogether.service.EmailService;
 import com.todotogether.service.MemberService;
+import com.todotogether.service.PrincipalOauth2UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,4 +27,7 @@ public class SpringConfig {
 
     @Bean
     public ModelMapper modelMapper() {return new ModelMapper();}
+
+    @Bean
+    public PrincipalOauth2UserService principalDetailsService() {return new PrincipalOauth2UserService();}
 }
